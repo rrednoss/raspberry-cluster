@@ -1,0 +1,17 @@
+---
+
+- name: prepare Raspberry Pi's
+  hosts: all
+
+  remote_user: ubuntu
+  become: True
+  become_user: root
+
+  vars_files:
+  - vars/main.yml
+
+  pre_tasks:
+  - name: upgrade the os
+    ansible.builtin.apt:
+      autoremove: True
+      upgrade: dist
