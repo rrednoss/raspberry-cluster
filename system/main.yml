@@ -15,3 +15,12 @@
     ansible.builtin.apt:
       autoremove: True
       upgrade: dist
+
+  tasks:
+  - name: install temperature script
+    ansible.builtin.copy:
+      src: ../scripts/temperature.py
+      dest: /home/ubuntu/temperature.py
+      owner: ubuntu
+      group: ubuntu
+      mode: '0744'
