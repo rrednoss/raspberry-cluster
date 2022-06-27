@@ -1,0 +1,49 @@
+---
+
+- block:
+  - name: micro-k8s installation
+    community.general.snap:
+      classic: yes
+      channel: "{{ kubernetes_version }}"
+      name: microk8s
+    tags:
+    - installation
+  # TODO (rednoss): Use changed_when and failed_when
+  - name: micro-k8s wait to be ready
+    ansible.builtin.command:
+      cmd: microk8s.status --wait-ready
+    become: yes
+    tags:
+    - installation
+
+- block:
+  - name: add master nodes
+    ansible.builtin.shell:
+      cmd: microk8s.add-node | head -n 2
+    become: yes
+    register: microk8s_add_node
+    tags:
+    - config
+    - master
+    when: "'master' in group_names"
+  # - name: debug
+  #   ansible.builtin.debug:
+  #     msg: "microk8s.join {{ microk8s_add_node.stdout | regex_search('(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?(.|)){4}:[0-9]{5}(\/[a-zA-Z0-9]*){2}$') }}"
+  #   when: "'worker' in group_names"
+  #   tags:
+  #   - config
+  - name: create join command
+    ansible.builtin.set_fact:
+      join_cmd: "microk8s.join {{ microk8s_add_node.stdout | regex_search('(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?(.|)){4}:[0-9]{5}(\/[a-zA-Z0-9]*){2}$') }}"
+    when: "'master' in group_names"
+    tags:
+    - config
+    - master
+  - name: add worker nodes
+    ansible.builtin.command:
+      cmd: "{{ join_cmd }}"
+    become: yes
+    tags:
+    - config
+    - worker
+    when: "'worker' in group_names"

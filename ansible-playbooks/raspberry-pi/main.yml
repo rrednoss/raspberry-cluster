@@ -16,10 +16,13 @@
       autoremove: True
       upgrade: dist
 
+  roles:
+  - role: ../../ansible-roles/micro-k8s
+
   tasks:
   - name: install temperature script
     ansible.builtin.copy:
-      src: ../scripts/temperature.py
+      src: ../../scripts/temperature.py
       dest: /home/ubuntu/temperature.py
       owner: ubuntu
       group: ubuntu
